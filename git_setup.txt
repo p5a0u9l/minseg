@@ -1,0 +1,13 @@
+#!/usr/bin/sh
+# This assumes you have cygwin with git. I'm not sure how it 
+# would work with msys git bash... maybe the same
+
+# set up proxy env variable
+export http_proxy="http://www-blv-proxy.boeing.com:31060"
+# configure git
+git config --global http.proxy $http_proxy
+# At this point, should be able to clone the repo via
+git clone https://github.com/p5a0u9l/minseg.git
+# If this is succesful, then future pulls would be
+git pull origin some_branch_name_easiest_is_master # would pull all changes to your local
+git push origin some_branch_name_easiest_is_master # would push your local changes to github
