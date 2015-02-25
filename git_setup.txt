@@ -1,6 +1,6 @@
 #!/usr/bin/sh
-# This assumes you have cygwin with git. I'm not sure how it 
-# would work with msys git bash... maybe the same
+# This assumes you have cygwin with git. 
+# Also works verbatim with msys git bash...
 
 # set up proxy env variable
 export http_proxy="http://www-blv-proxy.boeing.com:31060"
