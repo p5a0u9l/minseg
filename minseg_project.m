@@ -1,5 +1,5 @@
 %% MinSeg Project - EE 547 (PMP) - Winter 2015
-% prepared by Paul Adams
+% prepared by  Christopher S Schulenberg, Paul Adams
 %
 
 %% Initialization
@@ -79,7 +79,7 @@ else
 end
 %%
 % <html> <h3> Step 6 Find the poles of the transfer function </h3> </html>
-[~,poles_minseg,~]=zpkdata(sys) %todo - BIBO stable?
+[~, poles_minseg, ~] = zpkdata(sys) %todo - BIBO stable?
 
 %% 4.2 Controllability and Observability of the System
 % <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
@@ -145,7 +145,10 @@ figure
 plot(time,y)
 
 %% 4.5 Feedback Control using State Estimator
-%  <html> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </html>
-
+% <html> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </html>
+%
 %% 4.6 Bonus Step
-%  <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
+%% 
+% <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
+%
+close all
