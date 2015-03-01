@@ -8,7 +8,7 @@ close all
 digits(3);
 set(0, 'defaultTextInterpreter', 'latex'); 
 format shortG
-numerical_precision = 1e-9;
+numerical_precision = 1e-6;
 syms a x I_p m_p L r_w I_w m_w r_w
 syms s k_t R V k_b 
 
@@ -45,22 +45,22 @@ Arow41 = (g*L^2*m_p^2*r_w^2)/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_
 Arow42 = -k_b*k_t*r_w*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 Arow44 = -k_b*k_t*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 A = [0, 1, 0, 0; Arow12, Arow22, 0, Arow24; 0, 0, 0, 1; Arow41, Arow42, 0, Arow44];    
-%render_latex(['A = ' latex(vpa(A, 3))], 10, 1)
+render_latex(['A = ' latex(vpa(A, 3))], 10, 1)
 
 %% 
 Brow2 = -(k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w))))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 Brow3 = -(k_t*r_w*(I_p+ L*m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 B = [0; Brow2; 0; Brow3];
-%render_latex(['B = ' latex(vpa(B, 3))], 10, 1)
-n = size(A, 1);
-C = eye(n);
-D = zeros(n, 1);
+render_latex(['B = ' latex(vpa(B, 3))], 10, 1)
+N = size(A, 1);
+C = eye(N);
+D = zeros(N, 1);
 
 %%
 % <html> <h3> Step 3 Transfer Function. </h3> </html>
 sys = ss(A, B, C, D);
 [num, den] = ss2tf(A, B, C, D);
-for i = 1:n
+for i = 1:N
     G(i, :) = vpa(poly2sym(num(i, :), s), 2)/vpa(poly2sym(den, s), 2);
 end
 render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
@@ -68,24 +68,30 @@ render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
 % <html> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </html>
 Delta = vpa(charpoly(A, s), 2);
 render_latex(['\Delta(\lambda) = ' latex(vpa(Delta, 2))], 12, 0.5)
-lambda = eig(A)
-
+lambda = eig(A);
+render_latex(['\lambda = ' latex(vpa(sym(lambda.'), 2))], 12, 0.5)
 %%
 % <html> <h3> Step 5 Check if the system is asymptotically stable. </h3> </html>
-if all(real(eig(A)) < 0)
+if all(real(lambda) < 0)
     disp('System is Asymptotically stable')
 else
     disp('System is Not Asymptotically stable')
 end
 %%
 % <html> <h3> Step 6 Find the poles of the transfer function </h3> </html>
-[~, poles_minseg, ~] = zpkdata(sys) %todo - BIBO stable?
+%%
+% <html> <h4> For an LTI systems the eigenvalues of A are the poles of G(s). 
+% Since there are poles in the right-hand plane, the system in not BIBO stable. </h4> </html>
+poles_minseg = lambda;
+render_latex(['poles_{MinSeg} = ' latex(vpa(sym(lambda.'), 2))], 12, 0.5)
+% [~, poles_minseg, ~] = zpkdata(sys) %NOTE - Do we need this alternate form of the poles? paul
 
 %% 4.2 Controllability and Observability of the System
 % <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
 Cm = ctrb(sys.a, sys.b);
-if rank(Cm) >= n
+if rank(Cm) >= N
     disp('System is controllable')
+    fprintf('Rank of controllability matrix is %d', rank(Cm))
 else
     disp('System is not controllable')
 end
@@ -93,33 +99,56 @@ end
 %%
 % <html> <h3> Step 8 Analyze the observability of the linearized system.</h3> </html>
 Om = obsv(sys.a, sys.c);
-if rank(Cm) >= n
+if rank(Cm) >= N
     disp('System is observable')
 else
     disp('System is not observable')
 end
-
 %%
-% <html> <h3> Step 9 Transform the linearized system into a _controllable canonical form_ and _observable canonical form_.</h3> </html>
-ccf = canon(sys, 'companion'); %todo observable canonical form?
+% <html> <h3> Step 9 Transform the linearized system into a controllable canonical form and observable canonical form_.</h3> </html>
+alpha = den(2:end); % denominator coefficients of G(s)
+Cm_bar_inv = [1, alpha(1), alpha(2), alpha(3); 
+              0, 1, alpha(1), alpha(2); 
+              0, 0, 1, alpha(1);
+              0, 0, 0, 1];
+Q = round(Cm*Cm_bar_inv/numerical_precision)*numerical_precision; 
+ccf = ss(Q\A*Q, Q\B, C*Q, D);
+ocf = canon(sys, 'companion');
+render_latex(['A_{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2)
+render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2)
+render_latex(['A_{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2)
+render_latex(['C_{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)
 
 %% 4.3 State Estimator
+
 % <html> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </html>
-poles_obsv = -6*abs(poles_minseg{3}); %todo fix this
-L = place(transpose(A), transpose(C), poles_obsv);
+poles_obsv = 6*(poles_minseg); %todo fix this NOTE% 
+L = place(transpose(A), transpose(C), poles_obsv)';
 
 %%
 % <html> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </html>
 xini = [0 0 0 0];
 xhatini = [0 0 0 0];
 sim('step_11');
-figure
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+f.Position(4) = 1.3*f.Position(4);
 subplot(3,1,1)
+title('Closed-loop state estimator for the open-loop system')
+xlabel('time [s]')
 plot(time,x)
+legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$', ...
+        'Interpreter', 'latex')
 subplot(3,1,2)
 plot(time,xhat)
+legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', ...
+       '$\hat{x}$', '$\hat{\dot{x}}$'...
+        , 'Interpreter', 'latex')
+xlabel('time [s]')
+
 subplot(3,1,3)
 plot(time,y)
+xlabel('time [s]')
 
 %% 4.4 Feedback control
 % <html> <h3> Step 12 Develop a proportional feedback controller.</h3> </html>
