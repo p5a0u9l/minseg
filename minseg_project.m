@@ -63,11 +63,11 @@ sys = ss(A, B, C, D);
 for i = 1:n
     G(i, :) = vpa(poly2sym(num(i, :), s), 2)/vpa(poly2sym(den, s), 2);
 end
-%render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
+render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
 %%
 % <html> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </html>
 Delta = vpa(charpoly(A, s), 2);
-%render_latex(['\Delta(\lambda) = ' latex(vpa(Delta, 2))], 12, 0.5)
+render_latex(['\Delta(\lambda) = ' latex(vpa(Delta, 2))], 12, 0.5)
 lambda = eig(A)
 
 %%
@@ -101,12 +101,12 @@ end
 
 %%
 % <html> <h3> Step 9 Transform the linearized system into a _controllable canonical form_ and _observable canonical form_.</h3> </html>
-ccf = canon(sys,'companion'); %todo observable canonical form?
+ccf = canon(sys, 'companion'); %todo observable canonical form?
 
 %% 4.3 State Estimator
 % <html> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </html>
 poles_obsv = -6*abs(poles_minseg{3}); %todo fix this
-L = place(transpose(A),transpose(C),poles_obsv);
+L = place(transpose(A), transpose(C), poles_obsv);
 
 %%
 % <html> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </html>
@@ -124,12 +124,12 @@ plot(time,y)
 %% 4.4 Feedback control
 % <html> <h3> Step 12 Develop a proportional feedback controller.</h3> </html>
 poles_fbkCtrl = poles_obsv;
-K = place(A,B,poles_fbkCtrl);
+K = place(A, B, poles_fbkCtrl);
 
 %%
 % <html> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </html>
 A_cl = A-B*K;
-sys_cl = ss(A_cl,B,C,D);
+sys_cl = ss(A_cl, B, C, D);
 ChaPoly_cl = poly(A_cl);
 eigenvalues_cl = eig(A_cl);
 if all(real(eigenvalues_cl) < 0)

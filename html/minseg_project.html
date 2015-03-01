@@ -1,0 +1,348 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MinSeg Project - EE 547 (PMP) - Winter 2015</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-01"><meta name="DC.source" content="minseg_project.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>MinSeg Project - EE 547 (PMP) - Winter 2015</h1><!--introduction--><p>prepared by  Christopher S Schulenberg, Paul Adams</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization</a></li><li><a href="#2">4.1 Dynamical Model of the MinSeg Robot</a></li><li><a href="#10">4.2 Controllability and Observability of the System</a></li><li><a href="#13">4.3 State Estimator</a></li><li><a href="#15">4.4 Feedback control</a></li><li><a href="#18">4.5 Feedback Control using State Estimator</a></li><li><a href="#19">4.6 Bonus Step</a></li></ul></div><h2>Initialization<a name="1"></a></h2><pre class="codeinput">addpath(<span class="string">'simulink'</span>)
+close <span class="string">all</span>
+digits(3);
+set(0, <span class="string">'defaultTextInterpreter'</span>, <span class="string">'latex'</span>);
+format <span class="string">shortG</span>
+numerical_precision = 1e-9;
+syms <span class="string">a</span> <span class="string">x</span> <span class="string">I_p</span> <span class="string">m_p</span> <span class="string">L</span> <span class="string">r_w</span> <span class="string">I_w</span> <span class="string">m_w</span> <span class="string">r_w</span>
+syms <span class="string">s</span> <span class="string">k_t</span> <span class="string">R</span> <span class="string">V</span> <span class="string">k_b</span>
+</pre><h2>4.1 Dynamical Model of the MinSeg Robot<a name="2"></a></h2><p> <h3> Step 2 Physical Parameters. </h3> </p><pre class="codeinput">g = 9.80665;    <span class="comment">% [m/s^2]</span>
+k_t = 0.3233;   <span class="comment">% [Nm/a]</span>
+k_b = 0.4953;   <span class="comment">% [Vs/rad]</span>
+R = 5.2628;     <span class="comment">% [Ohms]</span>
+L = 0.11;       <span class="comment">% [m]   - demonstrated balance point with 6 AA batteries</span>
+m_p = 0.3;      <span class="comment">% [kg]  - guess</span>
+m_w = 0.1;      <span class="comment">% [kg]  - guess</span>
+r_w = 0.016;    <span class="comment">% [m]   - 5/8", measured</span>
+<span class="comment">% assume a filled circular area (x2 for inertia of both wheels)</span>
+I_w = m_w*r_w^2/2;   <span class="comment">% [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia</span>
+w_arduino = 0.05363; <span class="comment">% [m] - width of arduino, http://www.adafruit.com/product/191</span>
+h_arduino = 0.01529; <span class="comment">% [m] - height of arduino, http://www.adafruit.com/product/191</span>
+h_p = 0.2;           <span class="comment">% [m] - height of pendulum, from top of PCB to wheel axis, measured</span>
+l_arduino = 0.10198; <span class="comment">% [m] - length of arduino, http://www.adafruit.com/product/191</span>
+<span class="comment">% assuming a filled rectangular area</span>
+<span class="comment">%I_p = w_arduino*l_arduino^3/12; % [m^4] - http://en.wikipedia.org/wiki/List_of_area_moments_of_inertia</span>
+<span class="comment">% assuming rod length L and mass m</span>
+<span class="comment">%I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia</span>
+<span class="comment">% assuming point mass</span>
+I_p = m_p * L^2; <span class="comment">% [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia</span>
+</pre><p> <h3> Step 1 State-space Matrices. </h3> </p><pre class="codeinput">Arow12 = (g*L*m_p*(I_w + (m_p + m_w)*r_w^2))/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
+Arow22 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow24 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*r_w*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow41 = (g*L^2*m_p^2*r_w^2)/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
+Arow42 = -k_b*k_t*r_w*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow44 = -k_b*k_t*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+A = [0, 1, 0, 0; Arow12, Arow22, 0, Arow24; 0, 0, 0, 1; Arow41, Arow42, 0, Arow44];
+<span class="comment">%render_latex(['A = ' latex(vpa(A, 3))], 10, 1)</span>
+</pre><pre class="codeinput">Brow2 = -(k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w))))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Brow3 = -(k_t*r_w*(I_p+ L*m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+B = [0; Brow2; 0; Brow3];
+<span class="comment">%render_latex(['B = ' latex(vpa(B, 3))], 10, 1)</span>
+n = size(A, 1);
+C = eye(n);
+D = zeros(n, 1);
+</pre><p> <h3> Step 3 Transfer Function. </h3> </p><pre class="codeinput">sys = ss(A, B, C, D);
+[num, den] = ss2tf(A, B, C, D);
+<span class="keyword">for</span> i = 1:n
+    G(i, :) = vpa(poly2sym(num(i, :), s), 2)/vpa(poly2sym(den, s), 2);
+<span class="keyword">end</span>
+render_latex([<span class="string">'\hat{G}(s) = '</span> latex(vpa(G, 2))], 12, 1.5)
+</pre><img vspace="5" hspace="5" src="minseg_project_01.bmp" alt=""> <p> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </p><pre class="codeinput">Delta = vpa(charpoly(A, s), 2);
+render_latex([<span class="string">'\Delta(\lambda) = '</span> latex(vpa(Delta, 2))], 12, 0.5)
+lambda = eig(A)
+</pre><img vspace="5" hspace="5" src="minseg_project_02.bmp" alt=""> <pre class="codeoutput">
+lambda =
+
+            0
+      -460.16
+       6.2261
+      -6.1642
+
+</pre><p> <h3> Step 5 Check if the system is asymptotically stable. </h3> </p><pre class="codeinput"><span class="keyword">if</span> all(real(eig(A)) &lt; 0)
+    disp(<span class="string">'System is Asymptotically stable'</span>)
+<span class="keyword">else</span>
+    disp(<span class="string">'System is Not Asymptotically stable'</span>)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">System is Not Asymptotically stable
+</pre><p> <h3> Step 6 Find the poles of the transfer function </h3> </p><pre class="codeinput">[~, poles_minseg, ~] = zpkdata(sys) <span class="comment">%todo - BIBO stable?</span>
+</pre><pre class="codeoutput">
+poles_minseg = 
+
+    [3x1 double]
+    [3x1 double]
+    [4x1 double]
+    [3x1 double]
+
+</pre><h2>4.2 Controllability and Observability of the System<a name="10"></a></h2><p> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </p><pre class="codeinput">Cm = ctrb(sys.a, sys.b);
+<span class="keyword">if</span> rank(Cm) &gt;= n
+    disp(<span class="string">'System is controllable'</span>)
+<span class="keyword">else</span>
+    disp(<span class="string">'System is not controllable'</span>)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">System is controllable
+</pre><p> <h3> Step 8 Analyze the observability of the linearized system.</h3> </p><pre class="codeinput">Om = obsv(sys.a, sys.c);
+<span class="keyword">if</span> rank(Cm) &gt;= n
+    disp(<span class="string">'System is observable'</span>)
+<span class="keyword">else</span>
+    disp(<span class="string">'System is not observable'</span>)
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">System is observable
+</pre><p> <h3> Step 9 Transform the linearized system into a _controllable canonical form_ and _observable canonical form_.</h3> </p><pre class="codeinput">ccf = canon(sys, <span class="string">'companion'</span>); <span class="comment">%todo observable canonical form?</span>
+</pre><h2>4.3 State Estimator<a name="13"></a></h2><p> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </p><pre class="codeinput">poles_obsv = -6*abs(poles_minseg{3}); <span class="comment">%todo fix this</span>
+L = place(transpose(A), transpose(C), poles_obsv);
+</pre><p> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </p><pre class="codeinput">xini = [0 0 0 0];
+xhatini = [0 0 0 0];
+sim(<span class="string">'step_11'</span>);
+figure
+subplot(3,1,1)
+plot(time,x)
+subplot(3,1,2)
+plot(time,xhat)
+subplot(3,1,3)
+plot(time,y)
+</pre><img vspace="5" hspace="5" src="minseg_project_03.bmp" alt=""> <h2>4.4 Feedback control<a name="15"></a></h2><p> <h3> Step 12 Develop a proportional feedback controller.</h3> </p><pre class="codeinput">poles_fbkCtrl = poles_obsv;
+K = place(A, B, poles_fbkCtrl);
+</pre><p> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </p><pre class="codeinput">A_cl = A-B*K;
+sys_cl = ss(A_cl, B, C, D);
+ChaPoly_cl = poly(A_cl);
+eigenvalues_cl = eig(A_cl);
+<span class="keyword">if</span> all(real(eigenvalues_cl) &lt; 0)
+    disp(<span class="string">'Closed loop fedback control system is Asymptotically stable'</span>)
+<span class="keyword">else</span>
+    disp(<span class="string">'Closed loop fedback control system is Not Asymptotically stable'</span>)
+<span class="keyword">end</span> <span class="comment">%todo - currently one eigenvalue is zero, due to improper pole placement (previous todo)</span>
+</pre><pre class="codeoutput">Closed loop fedback control system is Not Asymptotically stable
+</pre><p> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </p><pre class="codeinput">sim(<span class="string">'step_14'</span>)
+figure
+plot(time,y)
+</pre><pre class="codeoutput">Warning: Model 'step_14' is using a default value of 0.2 for maximum step size.
+You can disable this diagnostic by setting 'Automatic solver parameter
+selection' diagnostic to 'none' in the Diagnostics page of the configuration
+parameters dialog 
+</pre><img vspace="5" hspace="5" src="minseg_project_04.bmp" alt=""> <h2>4.5 Feedback Control using State Estimator<a name="18"></a></h2><p> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </p><h2>4.6 Bonus Step<a name="19"></a></h2><p> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </p><pre class="codeinput">close <span class="string">all</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% MinSeg Project - EE 547 (PMP) - Winter 2015
+% prepared by  Christopher S Schulenberg, Paul Adams
+%
+
+%% Initialization
+addpath('simulink')
+close all
+digits(3);
+set(0, 'defaultTextInterpreter', 'latex'); 
+format shortG
+numerical_precision = 1e-9;
+syms a x I_p m_p L r_w I_w m_w r_w
+syms s k_t R V k_b 
+
+%% 4.1 Dynamical Model of the MinSeg Robot
+%%
+% <html> <h3> Step 2 Physical Parameters. </h3> </html>
+g = 9.80665;    % [m/s^2]
+k_t = 0.3233;   % [Nm/a]
+k_b = 0.4953;   % [Vs/rad]
+R = 5.2628;     % [Ohms]
+L = 0.11;       % [m]   - demonstrated balance point with 6 AA batteries
+m_p = 0.3;      % [kg]  - guess
+m_w = 0.1;      % [kg]  - guess
+r_w = 0.016;    % [m]   - 5/8", measured
+% assume a filled circular area (x2 for inertia of both wheels)
+I_w = m_w*r_w^2/2;   % [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
+w_arduino = 0.05363; % [m] - width of arduino, http://www.adafruit.com/product/191
+h_arduino = 0.01529; % [m] - height of arduino, http://www.adafruit.com/product/191
+h_p = 0.2;           % [m] - height of pendulum, from top of PCB to wheel axis, measured
+l_arduino = 0.10198; % [m] - length of arduino, http://www.adafruit.com/product/191
+% assuming a filled rectangular area
+%I_p = w_arduino*l_arduino^3/12; % [m^4] - http://en.wikipedia.org/wiki/List_of_area_moments_of_inertia
+% assuming rod length L and mass m
+%I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
+% assuming point mass
+I_p = m_p * L^2; % [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia
+
+%%
+% <html> <h3> Step 1 State-space Matrices. </h3> </html>
+Arow12 = (g*L*m_p*(I_w + (m_p + m_w)*r_w^2))/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
+Arow22 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow24 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*r_w*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow41 = (g*L^2*m_p^2*r_w^2)/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
+Arow42 = -k_b*k_t*r_w*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Arow44 = -k_b*k_t*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+A = [0, 1, 0, 0; Arow12, Arow22, 0, Arow24; 0, 0, 0, 1; Arow41, Arow42, 0, Arow44];    
+%render_latex(['A = ' latex(vpa(A, 3))], 10, 1)
+
+%% 
+Brow2 = -(k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w))))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+Brow3 = -(k_t*r_w*(I_p+ L*m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+B = [0; Brow2; 0; Brow3];
+%render_latex(['B = ' latex(vpa(B, 3))], 10, 1)
+n = size(A, 1);
+C = eye(n);
+D = zeros(n, 1);
+
+%%
+% <html> <h3> Step 3 Transfer Function. </h3> </html>
+sys = ss(A, B, C, D);
+[num, den] = ss2tf(A, B, C, D);
+for i = 1:n
+    G(i, :) = vpa(poly2sym(num(i, :), s), 2)/vpa(poly2sym(den, s), 2);
+end
+render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
+%%
+% <html> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </html>
+Delta = vpa(charpoly(A, s), 2);
+render_latex(['\Delta(\lambda) = ' latex(vpa(Delta, 2))], 12, 0.5)
+lambda = eig(A)
+
+%%
+% <html> <h3> Step 5 Check if the system is asymptotically stable. </h3> </html>
+if all(real(eig(A)) < 0)
+    disp('System is Asymptotically stable')
+else
+    disp('System is Not Asymptotically stable')
+end
+%%
+% <html> <h3> Step 6 Find the poles of the transfer function </h3> </html>
+[~, poles_minseg, ~] = zpkdata(sys) %todo - BIBO stable?
+
+%% 4.2 Controllability and Observability of the System
+% <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
+Cm = ctrb(sys.a, sys.b);
+if rank(Cm) >= n
+    disp('System is controllable')
+else
+    disp('System is not controllable')
+end
+
+%%
+% <html> <h3> Step 8 Analyze the observability of the linearized system.</h3> </html>
+Om = obsv(sys.a, sys.c);
+if rank(Cm) >= n
+    disp('System is observable')
+else
+    disp('System is not observable')
+end
+
+%%
+% <html> <h3> Step 9 Transform the linearized system into a _controllable canonical form_ and _observable canonical form_.</h3> </html>
+ccf = canon(sys, 'companion'); %todo observable canonical form?
+
+%% 4.3 State Estimator
+% <html> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </html>
+poles_obsv = -6*abs(poles_minseg{3}); %todo fix this
+L = place(transpose(A), transpose(C), poles_obsv);
+
+%%
+% <html> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </html>
+xini = [0 0 0 0];
+xhatini = [0 0 0 0];
+sim('step_11');
+figure
+subplot(3,1,1)
+plot(time,x)
+subplot(3,1,2)
+plot(time,xhat)
+subplot(3,1,3)
+plot(time,y)
+
+%% 4.4 Feedback control
+% <html> <h3> Step 12 Develop a proportional feedback controller.</h3> </html>
+poles_fbkCtrl = poles_obsv;
+K = place(A, B, poles_fbkCtrl);
+
+%%
+% <html> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </html>
+A_cl = A-B*K;
+sys_cl = ss(A_cl, B, C, D);
+ChaPoly_cl = poly(A_cl);
+eigenvalues_cl = eig(A_cl);
+if all(real(eigenvalues_cl) < 0)
+    disp('Closed loop fedback control system is Asymptotically stable')
+else
+    disp('Closed loop fedback control system is Not Asymptotically stable')
+end %todo - currently one eigenvalue is zero, due to improper pole placement (previous todo)
+
+%%
+% <html> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </html>
+sim('step_14')
+figure
+plot(time,y)
+
+%% 4.5 Feedback Control using State Estimator
+% <html> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </html>
+%
+%% 4.6 Bonus Step
+%% 
+% <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
+%
+close all
+##### SOURCE END #####
+--></body></html>
