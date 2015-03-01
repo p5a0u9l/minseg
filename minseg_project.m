@@ -101,7 +101,7 @@ end
 
 %%
 % <html> <h3> Step 9 Transform the linearized system into a _controllable canonical form_ and _observable canonical form_.</h3> </html>
-ccf = canon(sys,'companion'); %todo observable canonical form
+ccf = canon(sys,'companion'); %todo observable canonical form?
 
 %% 4.3 State Estimator
 % <html> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </html>
@@ -121,16 +121,31 @@ plot(time,xhat)
 subplot(3,1,3)
 plot(time,y)
 
-%%
-% <html> <h3> Step Response of open-loop system. </h3> </html>
-[y, t, x] = step(sys);
-f = figure;
-%f.Position(3) = 1.5*f.Position(3);
-plot(t, y)
-xlabel('time [s]')
-title('Step-input response of open-loop system')
-legend('\alpha', '\dot{\alpha}', 'x', '\dot{x}', 'Location', 'northwest')
-
+%% 4.4 Feedback control
+% <html> <h3> Step 12 Develop a proportional feedback controller.</h3> </html>
+poles_fbkCtrl = poles_obsv;
+K = place(A,B,poles_fbkCtrl);
 
 %%
-%close all
+% <html> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </html>
+A_cl = A-B*K;
+sys_cl = ss(A_cl,B,C,D);
+ChaPoly_cl = poly(A_cl);
+eigenvalues_cl = eig(A_cl);
+if all(real(eigenvalues_cl) < 0)
+    disp('Closed loop fedback control system is Asymptotically stable')
+else
+    disp('Closed loop fedback control system is Not Asymptotically stable')
+end %todo - currently one eigenvalue is zero, due to improper pole placement (previous todo)
+
+%%
+% <html> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </html>
+sim('step_14')
+figure
+plot(time,y)
+
+%% 4.5 Feedback Control using State Estimator
+%  <html> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </html>
+
+%% 4.6 Bonus Step
+%  <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
