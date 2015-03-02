@@ -8,7 +8,7 @@ close all
 digits(3);
 set(0, 'defaultTextInterpreter', 'latex'); 
 format shortG
-numerical_precision = 1e-6;
+numerical_precision = 1e-5;
 syms a x I_p m_p L r_w I_w m_w r_w
 syms s k_t R V k_b 
 
@@ -66,25 +66,29 @@ end
 render_latex(['\hat{G}(s) = ' latex(vpa(G, 2))], 12, 1.5)
 %%
 % <html> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </html>
-Delta = vpa(charpoly(A, s), 2);
-render_latex(['\Delta(\lambda) = ' latex(vpa(Delta, 2))], 12, 0.5)
-lambda = eig(A);
-render_latex(['\lambda = ' latex(vpa(sym(lambda.'), 2))], 12, 0.5)
+CharPoly_ol = vpa(charpoly(A, s), 2);
+render_latex(['\Delta(\lambda) = ' latex(vpa(CharPoly_ol, 2))], 12, 0.5)
+eigenvalues_ol = eig(A);
+render_latex(['\lambda = ' latex(vpa(sym(eigenvalues_ol.'), 2))], 12, 0.5)
 %%
 % <html> <h3> Step 5 Check if the system is asymptotically stable. </h3> </html>
-if all(real(lambda) < 0)
-    disp('System is Asymptotically stable')
+if all(real(eigenvalues_ol) < 0)
+    disp('Open-loop system is Asymptotically stable')
 else
-    disp('System is Not Asymptotically stable')
+    disp('Open-loop system is Not Asymptotically stable')
 end
 %%
 % <html> <h3> Step 6 Find the poles of the transfer function </h3> </html>
 %%
 % <html> <h4> For an LTI systems the eigenvalues of A are the poles of G(s). 
 % Since there are poles in the right-hand plane, the system in not BIBO stable. </h4> </html>
-poles_minseg = lambda;
-render_latex(['poles_{MinSeg} = ' latex(vpa(sym(lambda.'), 2))], 12, 0.5)
-% [~, poles_minseg, ~] = zpkdata(sys) %NOTE - Do we need this alternate form of the poles? paul
+poles_minseg = eigenvalues_ol;
+render_latex(['poles_{MinSeg} = ' latex(vpa(sym(eigenvalues_ol.'), 2))], 12, 0.5)
+% [~, poles_minseg, ~] = zpkdata(sys) %PRA - Do we need this alternate form of the poles? paul
+plot(poles_minseg, '*')
+xlabel('Re(s)');    ylabel('Im(s)');
+title('Poles of Open-loop System')
+xlim(20*[-1 1]);    ylim(20*[-1 1])
 
 %% 4.2 Controllability and Observability of the System
 % <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
@@ -111,71 +115,126 @@ Cm_bar_inv = [1, alpha(1), alpha(2), alpha(3);
               0, 1, alpha(1), alpha(2); 
               0, 0, 1, alpha(1);
               0, 0, 0, 1];
-Q = round(Cm*Cm_bar_inv/numerical_precision)*numerical_precision; 
-ccf = ss(Q\A*Q, Q\B, C*Q, D);
+Q = Cm*Cm_bar_inv; 
+A = round(Q\A*Q*1e5)/1e5;
+B = round(Q\B*1e5)/1e5;
+C = round(C*Q*1e5)/1e5;
+D = D;
+ccf = ss(A, B, C, D);
 ocf = canon(sys, 'companion');
-render_latex(['A_{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2)
-render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2)
-render_latex(['A_{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2)
-render_latex(['C_{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)
+render_latex(['A{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2)
+render_latex(['C{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2)
+render_latex(['A{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2)
+render_latex(['C{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)
 
 %% 4.3 State Estimator
 
 % <html> <h3> Step 10 Develop a closed loop state estimator for the open loop system.</h3> </html>
-poles_obsv = 6*(poles_minseg); %todo fix this NOTE% 
+poles_obsv = 6*(poles_minseg); %todo fix this
 L = place(transpose(A), transpose(C), poles_obsv)';
 
 %%
 % <html> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </html>
 xini = [0 0 0 0];
 xhatini = [0 0 0 0];
+%%
+% 
+% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_11.png>>
+% 
+
 sim('step_11');
 f = figure;
 f.Position(3) = 1.6*f.Position(3);
-f.Position(4) = 1.3*f.Position(4);
+f.Position(4) = 2*f.Position(4);
+
 subplot(3,1,1)
+plot(time, x)
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northwest', 'FontSize', 15)
 title('Closed-loop state estimator for the open-loop system')
-xlabel('time [s]')
-plot(time,x)
-legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$', ...
-        'Interpreter', 'latex')
+xlabel('time [s]');     ylabel('$\mathbf{x}$')
+
 subplot(3,1,2)
-plot(time,xhat)
-legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', ...
-       '$\hat{x}$', '$\hat{\dot{x}}$'...
-        , 'Interpreter', 'latex')
-xlabel('time [s]')
+plot(time, xhat)
+l = legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', '$\hat{x}$', '$\hat{\dot{x}}$');
+set(l, 'interpreter', 'latex', 'location', 'northwest', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{\hat{x}}$', 'interpreter', 'latex')
 
 subplot(3,1,3)
-plot(time,y)
-xlabel('time [s]')
+plot(time, y)
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northwest', 'FontSize', 15)
+xlabel('time =[s]');    ylabel('$\mathbf{y}$')
 
 %% 4.4 Feedback control
+%%
 % <html> <h3> Step 12 Develop a proportional feedback controller.</h3> </html>
-poles_fbkCtrl = poles_obsv;
-K = place(A, B, poles_fbkCtrl);
 
+% poles_fbkCtrl = -6*abs(poles_minseg);
+poles_fbkCtrl = [-10+5j, -10-5j, -12+1j,-12-1j];  %PRA try picking arbitray e-vals?
+K = place(A, B, poles_fbkCtrl);
+render_latex(['K = ' latex(vpa(sym(K), 2))], 12, 0.5)
+figure
+plot(poles_fbkCtrl, '*')
+xlabel('Re(s)');    ylabel('Im(s)');
+title('Selected Poles of Proportional Feedback Controller')
+xlim(20*[-1 1]);    ylim(20*[-1 1])
 %%
 % <html> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </html>
-A_cl = A-B*K;
-sys_cl = ss(A_cl, B, C, D);
-ChaPoly_cl = poly(A_cl);
-eigenvalues_cl = eig(A_cl);
+Acl = A - B*K;   %PRA Does it make sense to use ccf? Computationally lighter load..
+sys_cl = ss(Acl, B, C, D);
+CharPoly_cl = poly(Acl);
+eigenvalues_cl = eig(Acl);
 if all(real(eigenvalues_cl) < 0)
-    disp('Closed loop fedback control system is Asymptotically stable')
+    disp('Closed-loop feedback control system is Asymptotically stable')
 else
-    disp('Closed loop fedback control system is Not Asymptotically stable')
+    disp('Closed-loop feedback control system is Not Asymptotically stable')
 end %todo - currently one eigenvalue is zero, due to improper pole placement (previous todo)
+render_latex(['\Delta(\lambda) = ' latex(vpa(CharPoly_cl, 2))], 12, 0.5)
+render_latex(['\lambda = ' latex(vpa(sym(eigenvalues_cl.'), 2))], 12, 0.5)
 
 %%
 % <html> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </html>
+%%
+% 
+% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_14.png>>
+% 
 sim('step_14')
-figure
-plot(time,y)
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(time, y)
+title('Step-input Response of Closed-loop System with Proportional Feedback Controller')
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{y}$')
 
 %% 4.5 Feedback Control using State Estimator
+%%
 % <html> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </html>
 %
+%%
+% 
+% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_15.png>>
+% 
+poles_obsv = 6*(poles_fbkCtrl); %todo fix this
+L = place(A', C', poles_obsv)';
+sim('step_15')
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(time, y)
+title('Step-input Response of Closed-loop System with Proportional Feedback Controller')
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{y}$')
+
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(time, xhat)
+title('State Estimator')
+l = legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', '$\hat{x}$', '$\hat{\dot{x}}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{\hat{x}}$')
+
 %% 4.6 Bonus Step
 %% 
 % <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
