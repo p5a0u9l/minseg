@@ -5,7 +5,7 @@
 !*.m
 !html/* # relatively small... allows us to see published results
 !EE547* # "official" docs, preceded by EE547 pattern
-!simulink/*.slx  # only the model files... 
+!*.slx  # only the model files... 
 !.gitignore
 
 
