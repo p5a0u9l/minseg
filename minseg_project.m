@@ -20,8 +20,11 @@ k_t = 0.3233;   % [Nm/a]
 k_b = 0.4953;   % [Vs/rad]
 R = 5.2628;     % [Ohms]
 L = 0.11;       % [m]   - demonstrated balance point with 6 AA batteries
-m_p = 0.3;      % [kg]  - guess
-m_w = 0.1;      % [kg]  - guess
+m_brick_bat = 0.249; % measured in class
+m_wheel = 0.014; % measured in class
+m_motor = 117 - 2*m_wheel; 
+m_p = m_brick_bat + m_motor;      % [kg]  - guess
+m_w = 2*m_wheel;      % [kg]  - guess
 r_w = 0.016;    % [m]   - 5/8", measured
 % assume a filled circular area (x2 for inertia of both wheels)
 I_w = m_w*r_w^2/2;   % [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
