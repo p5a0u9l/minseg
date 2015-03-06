@@ -1,5 +1,8 @@
 # Notes #
 
+## Git Stuff ##
+1. To see which m-files and simulink files are being tracked by git on branch `master` issue
+    * `git ls-tree -r master | grep -E "(*\.m|*.slx)" `
 
 ## Comments ##
 1. `minseg_project.m`
@@ -24,3 +27,27 @@
 [Linear-Quadratic-Gaussian Control](http://www.mathworks.com/help/control/multi-input-multi-output-control-design.html)
 
 [Design an LQG Regulator](http://www.mathworks.com/help/control/getstart/functions-for-compensator-design.html#f2-1031766)
+
+## Emails ##
+1. 
+    From: Schulenberg, Christopher S 
+    Sent: Thursday, March 05, 2015 9:09 PM
+    To: Adams, Paul R
+    Subject: Running the minseg untethered
+
+    I was able to get MATLAB 2014b installed with the Arduino support package and run the model un-tethered.
+
+    1.  Use the ‘deploy to target hardware’ button to deploy the model to Arduino:
+     
+    2.  Do not press the ‘play’ button
+    3.  Untether the minseg
+    4.  Power on the minseg
+
+    I think when you press the play button it loads the ‘external mode’ code which relies on triggers from PC Simulink to run. If you deploy to target HW it is ready to go at the next power cycle.
+
+    The code with no modifications gives me ~2 seconds before scooting off to oblivion. Tomorrow’s task for me is to see how modify things to 1) reflect the analytical portion of the project in order to 2) actually stabilize the minseg, and 3) clean up the god awful project directory that was unzipped from the download.
+
+    I’d also like to include a few features like cutting the motor when the thing is laying on its side.
+
+    Thanks,
+    Chris

@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>MinSeg Project - EE 547 (PMP) - Winter 2015</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-03"><meta name="DC.source" content="minseg_project.m"><style type="text/css">
+      --><title>MinSeg Project - EE 547 (PMP) - Winter 2015</title><meta name="generator" content="MATLAB 8.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-03-05"><meta name="DC.source" content="minseg_project.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>MinSeg Project - EE 547 (PMP) - Winter 2015</h1><!--introduction--><p>prepared by  Christopher S Schulenberg, Paul Adams</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization</a></li><li><a href="#2">4.1 Dynamical Model of the MinSeg Robot</a></li><li><a href="#11">4.2 Controllability and Observability of the System</a></li><li><a href="#14">4.3 State Estimator</a></li><li><a href="#17">4.4 Feedback control</a></li><li><a href="#22">4.5 Feedback Control using State Estimator</a></li><li><a href="#25">4.6 Bonus Step</a></li></ul></div><h2>Initialization<a name="1"></a></h2><pre class="codeinput">addpath(<span class="string">'simulink'</span>)
+  </style></head><body><div class="content"><h1>MinSeg Project - EE 547 (PMP) - Winter 2015</h1><!--introduction--><p>prepared by  Christopher S Schulenberg, Paul Adams</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization</a></li><li><a href="#2">4.1 Dynamical Model of the MinSeg Robot</a></li><li><a href="#12">4.2 Controllability and Observability of the System</a></li><li><a href="#15">4.3 State Estimator</a></li><li><a href="#18">4.4 Feedback control</a></li><li><a href="#21">LQR</a></li><li><a href="#24">4.5 Feedback Control using State Estimator</a></li><li><a href="#27">4.6 Bonus Step</a></li></ul></div><h2>Initialization<a name="1"></a></h2><pre class="codeinput">addpath(<span class="string">'simulink'</span>)
 close <span class="string">all</span>
 digits(3);
 set(0, <span class="string">'defaultTextInterpreter'</span>, <span class="string">'latex'</span>);
@@ -79,22 +79,29 @@ k_t = 0.3233;   <span class="comment">% [Nm/a]</span>
 k_b = 0.4953;   <span class="comment">% [Vs/rad]</span>
 R = 5.2628;     <span class="comment">% [Ohms]</span>
 L = 0.11;       <span class="comment">% [m]   - demonstrated balance point with 6 AA batteries</span>
-m_p = 0.3;      <span class="comment">% [kg]  - guess</span>
-m_w = 0.1;      <span class="comment">% [kg]  - guess</span>
+m_brick_bat = 0.249; <span class="comment">% measured in class</span>
+m_wheel = 0.014; <span class="comment">% measured in class</span>
+m_motor = 117 - 2*m_wheel;
+m_p = m_brick_bat + m_motor;      <span class="comment">% [kg]  - guess</span>
+m_w = 2*m_wheel;      <span class="comment">% [kg]  - guess</span>
 r_w = 0.016;    <span class="comment">% [m]   - 5/8", measured</span>
 <span class="comment">% assume a filled circular area (x2 for inertia of both wheels)</span>
 I_w = m_w*r_w^2/2;   <span class="comment">% [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia</span>
-w_arduino = 0.05363; <span class="comment">% [m] - width of arduino, http://www.adafruit.com/product/191</span>
-h_arduino = 0.01529; <span class="comment">% [m] - height of arduino, http://www.adafruit.com/product/191</span>
 h_p = 0.2;           <span class="comment">% [m] - height of pendulum, from top of PCB to wheel axis, measured</span>
-l_arduino = 0.10198; <span class="comment">% [m] - length of arduino, http://www.adafruit.com/product/191</span>
 <span class="comment">% assuming a filled rectangular area</span>
 <span class="comment">%I_p = w_arduino*l_arduino^3/12; % [m^4] - http://en.wikipedia.org/wiki/List_of_area_moments_of_inertia</span>
 <span class="comment">% assuming rod length L and mass m</span>
 <span class="comment">%I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia</span>
 <span class="comment">% assuming point mass</span>
 I_p = m_p * L^2; <span class="comment">% [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia</span>
-</pre><p> <h3> Step 1 State-space Matrices. </h3> </p><pre class="codeinput">Arow12 = (g*L*m_p*(I_w + (m_p + m_w)*r_w^2))/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
+
+render_latex([<span class="string">'L = '</span> latex(vpa(L, 3)) <span class="string">' [\textrm{m}]'</span>], 12, 0.35)
+render_latex([<span class="string">'m_p = '</span> latex(vpa(m_p, 3)) <span class="string">' [\textrm{kg}]'</span>], 12, 0.35)
+render_latex([<span class="string">'I_p = '</span> latex(vpa(I_p, 3)) <span class="string">' [\textrm{kg m}^2]'</span>], 12, 0.35)
+render_latex([<span class="string">'m_w = '</span> latex(vpa(m_w, 3)) <span class="string">' [\textrm{kg}]'</span>], 12, 0.35)
+render_latex([<span class="string">'r_w = '</span> latex(vpa(r_w, 3)) <span class="string">' [\textrm{m}]'</span>], 12, 0.35)
+render_latex([<span class="string">'I_{cm,w} = '</span> latex(vpa(I_w, 3)) <span class="string">' [\textrm{kg m}^2]'</span>], 12, 0.35)
+</pre><img vspace="5" hspace="5" src="minseg_project_01.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_02.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_03.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_04.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_05.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_06.bmp" alt=""> <p><img vspace="5" hspace="5" src="C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\MinSegModel.png" alt=""> </p><p> <h3> Step 1 State-space Matrices. </h3> </p><pre class="codeinput">Arow12 = (g*L*m_p*(I_w + (m_p + m_w)*r_w^2))/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
 Arow22 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 Arow24 = -k_b*k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w)))/(R*r_w*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 Arow41 = (g*L^2*m_p^2*r_w^2)/(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2);
@@ -102,24 +109,24 @@ Arow42 = -k_b*k_t*r_w*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p
 Arow44 = -k_b*k_t*(I_p + L*m_p*(L + r_w))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 A = [0, 1, 0, 0; Arow12, Arow22, 0, Arow24; 0, 0, 0, 1; Arow41, Arow42, 0, Arow44];
 render_latex([<span class="string">'A = '</span> latex(vpa(A, 3))], 10, 1)
-</pre><img vspace="5" hspace="5" src="minseg_project_01.bmp" alt=""> <pre class="codeinput">Brow2 = -(k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w))))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
+</pre><img vspace="5" hspace="5" src="minseg_project_07.bmp" alt=""> <pre class="codeinput">Brow2 = -(k_t*(I_w + r_w*(m_w*r_w + m_p*(L + r_w))))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 Brow3 = -(k_t*r_w*(I_p+ L*m_p*(L + r_w)))/(R*(I_w*(I_p + L^2*m_p) + (L^2*m_p*m_w + I_p*(m_p + m_w))*r_w^2));
 B = [0; Brow2; 0; Brow3];
 render_latex([<span class="string">'B = '</span> latex(vpa(B, 3))], 10, 1)
 N = size(A, 1);
 C = eye(N);
 D = zeros(N, 1);
-</pre><img vspace="5" hspace="5" src="minseg_project_02.bmp" alt=""> <p> <h3> Step 3 Transfer Function. </h3> </p><pre class="codeinput">sys = ss(A, B, C, D);
+</pre><img vspace="5" hspace="5" src="minseg_project_08.bmp" alt=""> <p> <h3> Step 3 Transfer Function. </h3> </p><pre class="codeinput">sys = ss(A, B, C, D);
 [num, den] = ss2tf(A, B, C, D);
 <span class="keyword">for</span> i = 1:N
     G(i, :) = vpa(poly2sym(num(i, :), s), 2)/vpa(poly2sym(den, s), 2);
 <span class="keyword">end</span>
 render_latex([<span class="string">'\hat{G}(s) = '</span> latex(vpa(G, 2))], 12, 1.5)
-</pre><img vspace="5" hspace="5" src="minseg_project_03.bmp" alt=""> <p> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </p><pre class="codeinput">CharPoly_ol = vpa(charpoly(A, s), 2);
+</pre><img vspace="5" hspace="5" src="minseg_project_09.bmp" alt=""> <p> <h3> Step 4 Characteristic Polynomial and eigenvalues. </h3> </p><pre class="codeinput">CharPoly_ol = vpa(charpoly(A, s), 2);
 render_latex([<span class="string">'\Delta(\lambda) = '</span> latex(vpa(CharPoly_ol, 2))], 12, 0.5)
 eigenvalues_ol = eig(A);
 render_latex([<span class="string">'\lambda = '</span> latex(vpa(sym(eigenvalues_ol.'), 2))], 12, 0.5)
-</pre><img vspace="5" hspace="5" src="minseg_project_04.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_05.bmp" alt=""> <p> <h3> Step 5 Check if the system is asymptotically stable. </h3> </p><pre class="codeinput"><span class="keyword">if</span> all(real(eigenvalues_ol) &lt; 0)
+</pre><img vspace="5" hspace="5" src="minseg_project_10.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_11.bmp" alt=""> <p> <h3> Step 5 Check if the system is asymptotically stable. </h3> </p><pre class="codeinput"><span class="keyword">if</span> all(real(eigenvalues_ol) &lt; 0)
     disp(<span class="string">'Open-loop system is Asymptotically stable'</span>)
 <span class="keyword">else</span>
     disp(<span class="string">'Open-loop system is Not Asymptotically stable'</span>)
@@ -133,7 +140,7 @@ plot(poles_minseg, <span class="string">'*'</span>)
 xlabel(<span class="string">'Re(s)'</span>);    ylabel(<span class="string">'Im(s)'</span>);
 title(<span class="string">'Poles of Open-loop System'</span>)
 xlim(20*[-1 1]);    ylim(20*[-1 1])
-</pre><img vspace="5" hspace="5" src="minseg_project_06.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_07.bmp" alt=""> <h2>4.2 Controllability and Observability of the System<a name="11"></a></h2><p> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </p><pre class="codeinput">Cm = ctrb(sys.a, sys.b);
+</pre><img vspace="5" hspace="5" src="minseg_project_12.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_13.bmp" alt=""> <h2>4.2 Controllability and Observability of the System<a name="12"></a></h2><p> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </p><pre class="codeinput">Cm = ctrb(sys.a, sys.b);
 <span class="keyword">if</span> rank(Cm) &gt;= N
     disp(<span class="string">'System is controllable'</span>)
     fprintf(<span class="string">'Rank of controllability matrix is %d'</span>, rank(Cm))
@@ -164,7 +171,7 @@ render_latex([<span class="string">'A{ccf} = '</span> latex(vpa(sym(ccf.a), 2))]
 render_latex([<span class="string">'C{ccf} = '</span> latex(vpa(sym(ccf.c), 2))], 12, 1.2)
 render_latex([<span class="string">'A{ocf} = '</span> latex(vpa(sym(ocf.a), 2))], 12, 1.2)
 render_latex([<span class="string">'C{ocf} = '</span> latex(vpa(sym(ocf.c), 2))], 12, 1.2)
-</pre><img vspace="5" hspace="5" src="minseg_project_08.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_09.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_10.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_11.bmp" alt=""> <h2>4.3 State Estimator<a name="14"></a></h2><pre class="codeinput"><span class="comment">% &lt;html&gt; &lt;h3&gt; Step 10 Develop a closed loop state estimator for the open loop system.&lt;/h3&gt; &lt;/html&gt;</span>
+</pre><img vspace="5" hspace="5" src="minseg_project_14.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_15.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_16.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_17.bmp" alt=""> <h2>4.3 State Estimator<a name="15"></a></h2><pre class="codeinput"><span class="comment">% &lt;html&gt; &lt;h3&gt; Step 10 Develop a closed loop state estimator for the open loop system.&lt;/h3&gt; &lt;/html&gt;</span>
 poles_obsv = 6*(poles_minseg); <span class="comment">%todo fix this</span>
 L = place(transpose(A), transpose(C), poles_obsv)';
 </pre><p> <h3> Step 11 Develop a Simulink model of the linearized system.</h3> </p><pre class="codeinput">xini = [0 0 0 0];
@@ -192,7 +199,7 @@ plot(time, y)
 l = legend(<span class="string">'$\alpha$'</span>, <span class="string">'$\dot{\alpha}$'</span>, <span class="string">'$x$'</span>, <span class="string">'$\dot{x}$'</span>);
 set(l, <span class="string">'interpreter'</span>, <span class="string">'latex'</span>, <span class="string">'location'</span>, <span class="string">'northwest'</span>, <span class="string">'FontSize'</span>, 15)
 xlabel(<span class="string">'time =[s]'</span>);    ylabel(<span class="string">'$\mathbf{y}$'</span>)
-</pre><img vspace="5" hspace="5" src="minseg_project_12.bmp" alt=""> <h2>4.4 Feedback control<a name="17"></a></h2><p> <h3> Step 12 Develop a proportional feedback controller.</h3> </p><pre class="codeinput"><span class="comment">% poles_fbkCtrl = -6*abs(poles_minseg);</span>
+</pre><img vspace="5" hspace="5" src="minseg_project_18.bmp" alt=""> <h2>4.4 Feedback control<a name="18"></a></h2><p> <h3> Step 12 Develop a proportional feedback controller.</h3> </p><pre class="codeinput"><span class="comment">% poles_fbkCtrl = -6*abs(poles_minseg);</span>
 poles_fbkCtrl = [-10+5j, -10-5j, -12+1j,-12-1j];  <span class="comment">%PRA try picking arbitray e-vals?</span>
 K = place(A, B, poles_fbkCtrl);
 render_latex([<span class="string">'K = '</span> latex(vpa(sym(K), 2))], 12, 0.5)
@@ -201,7 +208,7 @@ plot(poles_fbkCtrl, <span class="string">'*'</span>)
 xlabel(<span class="string">'Re(s)'</span>);    ylabel(<span class="string">'Im(s)'</span>);
 title(<span class="string">'Selected Poles of Proportional Feedback Controller'</span>)
 xlim(20*[-1 1]);    ylim(20*[-1 1])
-</pre><img vspace="5" hspace="5" src="minseg_project_13.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_14.bmp" alt=""> <p> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </p><pre class="codeinput">Acl = A - B*K;   <span class="comment">%PRA Does it make sense to use ccf? Computationally lighter load..</span>
+</pre><img vspace="5" hspace="5" src="minseg_project_19.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_20.bmp" alt=""> <p> <h3> Step 13 Derive the state space representation of the closed loop system.</h3> </p><pre class="codeinput">Acl = A - B*K;   <span class="comment">%PRA Does it make sense to use ccf? Computationally lighter load..</span>
 sys_cl = ss(Acl, B, C, D);
 CharPoly_cl = poly(Acl);
 eigenvalues_cl = eig(Acl);
@@ -213,7 +220,30 @@ eigenvalues_cl = eig(Acl);
 render_latex([<span class="string">'\Delta(\lambda) = '</span> latex(vpa(CharPoly_cl, 2))], 12, 0.5)
 render_latex([<span class="string">'\lambda = '</span> latex(vpa(sym(eigenvalues_cl.'), 2))], 12, 0.5)
 </pre><pre class="codeoutput">Closed-loop feedback control system is Asymptotically stable
-</pre><img vspace="5" hspace="5" src="minseg_project_15.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_16.bmp" alt=""> <p> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </p><p><img vspace="5" hspace="5" src="C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_14.png" alt=""> </p><pre class="codeinput">sim(<span class="string">'step_14'</span>)
+</pre><img vspace="5" hspace="5" src="minseg_project_21.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_22.bmp" alt=""> <h2>LQR<a name="21"></a></h2><p> <h3> Step 13b LQR Design.</h3> </p><pre class="codeinput">Q = C'*C;
+Q(1, 1) = 1;
+Q(3, 3) = 1;
+R = 1;
+KLQR = lqr(A, B, Q, R);
+
+Acl = A - B*KLQR;   <span class="comment">%PRA Does it make sense to use ccf? Computationally lighter load..</span>
+sys_cl = ss(Acl, B, C, D);
+eigenvalues_cl = eig(Acl);
+<span class="keyword">if</span> all(real(eigenvalues_cl) &lt; 0)
+    disp(<span class="string">'Closed-loop feedback control system is Asymptotically stable'</span>)
+<span class="keyword">else</span>
+    disp(<span class="string">'Closed-loop feedback control system is Not Asymptotically stable'</span>)
+<span class="keyword">end</span>
+[y, t, ~] = step(sys_cl, 10);
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(t, y)
+title(<span class="string">'Step-input Response of Closed-loop System with LQR Controller'</span>)
+l = legend(<span class="string">'$\alpha$'</span>, <span class="string">'$\dot{\alpha}$'</span>, <span class="string">'$x$'</span>, <span class="string">'$\dot{x}$'</span>);
+set(l, <span class="string">'interpreter'</span>, <span class="string">'latex'</span>, <span class="string">'location'</span>, <span class="string">'northeast'</span>, <span class="string">'FontSize'</span>, 15)
+xlabel(<span class="string">'time [s]'</span>);     ylabel(<span class="string">'$\mathbf{y}$'</span>)
+</pre><pre class="codeoutput">Closed-loop feedback control system is Asymptotically stable
+</pre><img vspace="5" hspace="5" src="minseg_project_23.bmp" alt=""> <p> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </p><p><img vspace="5" hspace="5" src="C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_14.png" alt=""> </p><pre class="codeinput">sim(<span class="string">'step_14'</span>)
 f = figure;
 f.Position(3) = 1.6*f.Position(3);
 plot(time, y)
@@ -221,7 +251,7 @@ title(<span class="string">'Step-input Response of Closed-loop System with Propo
 l = legend(<span class="string">'$\alpha$'</span>, <span class="string">'$\dot{\alpha}$'</span>, <span class="string">'$x$'</span>, <span class="string">'$\dot{x}$'</span>);
 set(l, <span class="string">'interpreter'</span>, <span class="string">'latex'</span>, <span class="string">'location'</span>, <span class="string">'northeast'</span>, <span class="string">'FontSize'</span>, 15)
 xlabel(<span class="string">'time [s]'</span>);     ylabel(<span class="string">'$\mathbf{y}$'</span>)
-</pre><img vspace="5" hspace="5" src="minseg_project_17.bmp" alt=""> <h2>4.5 Feedback Control using State Estimator<a name="22"></a></h2><p> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </p><p><img vspace="5" hspace="5" src="C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_15.png" alt=""> </p><pre class="codeinput">poles_obsv = 6*(poles_fbkCtrl); <span class="comment">%todo fix this</span>
+</pre><img vspace="5" hspace="5" src="minseg_project_24.bmp" alt=""> <h2>4.5 Feedback Control using State Estimator<a name="24"></a></h2><p> <h3> Step 15 Combine the feedback controller with the state estimator.</h3> </p><p><img vspace="5" hspace="5" src="C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\step_15.png" alt=""> </p><pre class="codeinput">poles_obsv = 6*(poles_fbkCtrl); <span class="comment">%todo fix this</span>
 L = place(A', C', poles_obsv)';
 sim(<span class="string">'step_15'</span>)
 f = figure;
@@ -239,7 +269,7 @@ title(<span class="string">'State Estimator'</span>)
 l = legend(<span class="string">'$\hat{\alpha}$'</span>, <span class="string">'$\hat{\dot{\alpha}}$'</span>, <span class="string">'$\hat{x}$'</span>, <span class="string">'$\hat{\dot{x}}$'</span>);
 set(l, <span class="string">'interpreter'</span>, <span class="string">'latex'</span>, <span class="string">'location'</span>, <span class="string">'northeast'</span>, <span class="string">'FontSize'</span>, 15)
 xlabel(<span class="string">'time [s]'</span>);     ylabel(<span class="string">'$\mathbf{\hat{x}}$'</span>)
-</pre><img vspace="5" hspace="5" src="minseg_project_18.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_19.bmp" alt=""> <h2>4.6 Bonus Step<a name="25"></a></h2><p> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </p><pre class="codeinput">close <span class="string">all</span>
+</pre><img vspace="5" hspace="5" src="minseg_project_25.bmp" alt=""> <img vspace="5" hspace="5" src="minseg_project_26.bmp" alt=""> <h2>4.6 Bonus Step<a name="27"></a></h2><p> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </p><pre class="codeinput">close <span class="string">all</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% MinSeg Project - EE 547 (PMP) - Winter 2015
@@ -264,21 +294,32 @@ k_t = 0.3233;   % [Nm/a]
 k_b = 0.4953;   % [Vs/rad]
 R = 5.2628;     % [Ohms]
 L = 0.11;       % [m]   - demonstrated balance point with 6 AA batteries
-m_p = 0.3;      % [kg]  - guess
-m_w = 0.1;      % [kg]  - guess
+m_brick_bat = 0.249; % measured in class
+m_wheel = 0.014; % measured in class
+m_motor = 117 - 2*m_wheel; 
+m_p = m_brick_bat + m_motor;      % [kg]  - guess
+m_w = 2*m_wheel;      % [kg]  - guess
 r_w = 0.016;    % [m]   - 5/8", measured
 % assume a filled circular area (x2 for inertia of both wheels)
 I_w = m_w*r_w^2/2;   % [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
-w_arduino = 0.05363; % [m] - width of arduino, http://www.adafruit.com/product/191
-h_arduino = 0.01529; % [m] - height of arduino, http://www.adafruit.com/product/191
 h_p = 0.2;           % [m] - height of pendulum, from top of PCB to wheel axis, measured
-l_arduino = 0.10198; % [m] - length of arduino, http://www.adafruit.com/product/191
 % assuming a filled rectangular area
 %I_p = w_arduino*l_arduino^3/12; % [m^4] - http://en.wikipedia.org/wiki/List_of_area_moments_of_inertia
 % assuming rod length L and mass m
 %I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
 % assuming point mass
 I_p = m_p * L^2; % [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia
+
+render_latex(['L = ' latex(vpa(L, 3)) ' [\textrm{m}]'], 12, 0.35)
+render_latex(['m_p = ' latex(vpa(m_p, 3)) ' [\textrm{kg}]'], 12, 0.35)
+render_latex(['I_p = ' latex(vpa(I_p, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
+render_latex(['m_w = ' latex(vpa(m_w, 3)) ' [\textrm{kg}]'], 12, 0.35)
+render_latex(['r_w = ' latex(vpa(r_w, 3)) ' [\textrm{m}]'], 12, 0.35)
+render_latex(['I_{cm,w} = ' latex(vpa(I_w, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
+%%
+% 
+% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\MinSegModel.png>>
+% 
 
 %%
 % <html> <h3> Step 1 State-space Matrices. </h3> </html>
@@ -436,6 +477,31 @@ else
 end %todo - currently one eigenvalue is zero, due to improper pole placement (previous todo)
 render_latex(['\Delta(\lambda) = ' latex(vpa(CharPoly_cl, 2))], 12, 0.5)
 render_latex(['\lambda = ' latex(vpa(sym(eigenvalues_cl.'), 2))], 12, 0.5)
+
+%% LQR 
+% <html> <h3> Step 13b LQR Design.</h3> </html>
+Q = C'*C;
+Q(1, 1) = 1;
+Q(3, 3) = 1;
+R = 1; 
+KLQR = lqr(A, B, Q, R);
+
+Acl = A - B*KLQR;   %PRA Does it make sense to use ccf? Computationally lighter load..
+sys_cl = ss(Acl, B, C, D);
+eigenvalues_cl = eig(Acl);
+if all(real(eigenvalues_cl) < 0)
+    disp('Closed-loop feedback control system is Asymptotically stable')
+else
+    disp('Closed-loop feedback control system is Not Asymptotically stable')
+end 
+[y, t, ~] = step(sys_cl, 10);
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(t, y)
+title('Step-input Response of Closed-loop System with LQR Controller')
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{y}$')
 
 %%
 % <html> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </html>

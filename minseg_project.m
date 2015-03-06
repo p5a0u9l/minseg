@@ -4,13 +4,14 @@
 
 %% Initialization
 addpath('simulink')
-close all
+% close all
 digits(3);
 set(0, 'defaultTextInterpreter', 'latex'); 
 format shortG
 numerical_precision = 1e-5;
 syms a x I_p m_p L r_w I_w m_w r_w
 syms s k_t R V k_b 
+set(0,'DefaultFigureVisible','off');  % all subsequent figures "off"
 
 %% 4.1 Dynamical Model of the MinSeg Robot
 %%
@@ -28,16 +29,24 @@ m_w = 2*m_wheel;      % [kg]  - guess
 r_w = 0.016;    % [m]   - 5/8", measured
 % assume a filled circular area (x2 for inertia of both wheels)
 I_w = m_w*r_w^2/2;   % [kg-m^2]   - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
-w_arduino = 0.05363; % [m] - width of arduino, http://www.adafruit.com/product/191
-h_arduino = 0.01529; % [m] - height of arduino, http://www.adafruit.com/product/191
 h_p = 0.2;           % [m] - height of pendulum, from top of PCB to wheel axis, measured
-l_arduino = 0.10198; % [m] - length of arduino, http://www.adafruit.com/product/191
 % assuming a filled rectangular area
 %I_p = w_arduino*l_arduino^3/12; % [m^4] - http://en.wikipedia.org/wiki/List_of_area_moments_of_inertia
 % assuming rod length L and mass m
 %I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
 % assuming point mass
 I_p = m_p * L^2; % [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia
+
+render_latex(['L = ' latex(vpa(L, 3)) ' [\textrm{m}]'], 12, 0.35)
+render_latex(['m_p = ' latex(vpa(m_p, 3)) ' [\textrm{kg}]'], 12, 0.35)
+render_latex(['I_p = ' latex(vpa(I_p, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
+render_latex(['m_w = ' latex(vpa(m_w, 3)) ' [\textrm{kg}]'], 12, 0.35)
+render_latex(['r_w = ' latex(vpa(r_w, 3)) ' [\textrm{m}]'], 12, 0.35)
+render_latex(['I_{cm,w} = ' latex(vpa(I_w, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
+%%
+% 
+% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\MinSegModel.png>>
+% 
 
 %%
 % <html> <h3> Step 1 State-space Matrices. </h3> </html>
@@ -119,11 +128,11 @@ Cm_bar_inv = [1, alpha(1), alpha(2), alpha(3);
               0, 0, 1, alpha(1);
               0, 0, 0, 1];
 Q = Cm*Cm_bar_inv; 
-A = round(Q\A*Q*1e5)/1e5;
-B = round(Q\B*1e5)/1e5;
-C = round(C*Q*1e5)/1e5;
-D = D;
-ccf = ss(A, B, C, D);
+A_ = round(Q\A*Q*1e5)/1e5;
+B_ = round(Q\B*1e5)/1e5;
+C_ = round(C*Q*1e5)/1e5;
+D_ = D;
+ccf = ss(A_, B_, C_, D_);
 ocf = canon(sys, 'companion');
 render_latex(['A{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2)
 render_latex(['C{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2)
@@ -196,6 +205,37 @@ end %todo - currently one eigenvalue is zero, due to improper pole placement (pr
 render_latex(['\Delta(\lambda) = ' latex(vpa(CharPoly_cl, 2))], 12, 0.5)
 render_latex(['\lambda = ' latex(vpa(sym(eigenvalues_cl.'), 2))], 12, 0.5)
 
+%% LQR 
+% <html> <h3> Step 13b LQR Design.</h3> </html>
+k = 1;
+Q = k*(C'*C);
+Q(1, 1) = 2000;
+Q(3, 3) = 2000;
+
+R = 1; 
+KLQR = lqr(A, B, Q, R);
+
+Acl = A - B*KLQR;
+sys_cl = ss(Acl, B, C, D);
+eigenvalues_cl = eig(Acl);
+if all(real(eigenvalues_cl) < 0)
+    disp('Closed-loop LQR control system is Asymptotically stable')
+else
+    disp('Closed-loop LQR control system is Not Asymptotically stable')
+end 
+[y, t, x] = step(sys_cl, 10);
+f = figure(4);
+f.Position(3) = 1.6*f.Position(3);
+subplot(211)
+plot(t, y)
+ylim([-10, 10])
+title('Step-input Response of Closed-loop System with LQR Controller')
+l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{y}$')
+subplot(212)
+plot(t, x)
+set(gcf, 'Visible', 'on')
 %%
 % <html> <h3> Step 14 Develop a Simulink model of the linearized closed loop system.</h3> </html>
 %%
@@ -242,4 +282,4 @@ xlabel('time [s]');     ylabel('$\mathbf{\hat{x}}$')
 %% 
 % <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
 %
-close all
+% close all
