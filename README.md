@@ -28,6 +28,8 @@
 
 [Design an LQG Regulator](http://www.mathworks.com/help/control/getstart/functions-for-compensator-design.html#f2-1031766)
 
+[State Feedback Control in Simulink](http://ctms.engin.umich.edu/CTMS/index.php?example=AircraftPitch&section=SimulinkModeling)
+
 ## Emails ##
 1. 
     From: Schulenberg, Christopher S 
@@ -73,7 +75,7 @@
     3.  I renamed minseg_project.m to MinSeg_Report.m This is the Matlab which follows the pdf document step-by-step, generates plots, figures, text in a published format. I recommend we use this medium for the report itself as opposed to Word. If you want you could do the text write-up in Word and I can embed it in Matlab markup (I’m not implying you do all the write-up yourself ;)) I feel comfortable quickly adding/embedding anything into that file, then publishing it produces a report-ready document. We can discuss Saturday if you have strong feelings either way. 
 
     Code Organization/Git tips
-    4.  You’ll need to pull everything down. There might be merge conflicts since you were working last night. You could create a branch called “chris” to reserve your changes that you want to manually integrate. 
+    4.  You’ll need to pull everything down. There might be merge conflicts since you were working last night. You could create a branch called “chris�? to reserve your changes that you want to manually integrate. 
     5.  I’ve adopted the convention of naming all of our primary source files with a MinSeg pre-appendage to make them easily recognizable. 
     6.  Folders
     a.  The Report-related files are in the root (minseg) directory (and in the html directory, but we can ignore that folder). 
