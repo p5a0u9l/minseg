@@ -85,9 +85,9 @@ render_latex(['\lambda = ' latex(vpa(sym(eigenvalues_ol.'), 2))], 12, 0.5)
 %%
 % <html> <h3> Step 5 Check if the system is asymptotically stable. </h3> </html>
 if all(real(eigenvalues_ol) < 0)
-    disp('Open-loop system is Asymptotically stable')
+    fprintf('Open-loop system is Asymptotically stable\n')
 else
-    disp('Open-loop system is Not Asymptotically stable')
+    fprintf('Open-loop system is Not Asymptotically stable\n')
 end
 %%
 % <html> <h3> Step 6 Find the poles of the transfer function </h3> </html>
@@ -106,19 +106,19 @@ xlim(20*[-1 1]);    ylim(20*[-1 1])
 % <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
 Cm = ctrb(sys.a, sys.b);
 if rank(Cm) >= N
-    disp('System is controllable')
-    fprintf('Rank of controllability matrix is %d', rank(Cm))
+    fprintf('System is controllable\n')
+    fprintf('Rank of controllability matrix is %d\n', rank(Cm))
 else
-    disp('System is not controllable')
+    disp('System is not controllable\n')
 end
 
 %%
 % <html> <h3> Step 8 Analyze the observability of the linearized system.</h3> </html>
 Om = obsv(sys.a, sys.c);
 if rank(Cm) >= N
-    disp('System is observable')
+    fprintf('System is observable\n')
 else
-    disp('System is not observable')
+    fprintf('System is not observable\n')
 end
 %%
 % <html> <h3> Step 9 Transform the linearized system into a controllable canonical form and observable canonical form_.</h3> </html>
@@ -264,7 +264,7 @@ L = place(A', C', poles_obsv)';
 sim('step_15')
 f = figure;
 f.Position(3) = 1.6*f.Position(3);
-plot(time, y)
+plot(time, yf)
 title('Step-input Response of Closed-loop System with Proportional Feedback Controller')
 l = legend('$\alpha$', '$\dot{\alpha}$', '$x$', '$\dot{x}$');
 set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
@@ -272,11 +272,20 @@ xlabel('time [s]');     ylabel('$\mathbf{y}$')
 
 f = figure;
 f.Position(3) = 1.6*f.Position(3);
-plot(time, xhat)
+plot(time, xhatf)
 title('State Estimator')
 l = legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', '$\hat{x}$', '$\hat{\dot{x}}$');
 set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
 xlabel('time [s]');     ylabel('$\mathbf{\hat{x}}$')
+
+e = xf - x_hatf;
+f = figure;
+f.Position(3) = 1.6*f.Position(3);
+plot(time, e)
+title('State Estimator Error')
+l = legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', '$\hat{x}$', '$\hat{\dot{x}}$');
+set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
+xlabel('time [s]');     ylabel('$\mathbf{error}$')
 
 %% 4.6 Bonus Step
 %% 
