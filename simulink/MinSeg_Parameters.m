@@ -23,7 +23,7 @@ m_board_bat = 0.250; % measured in class
 m_board = 0.120;
 m_wheel = 0.017; % measured in class
 m_motor = 0.084; 
-m_battery = 6/0.252; 
+m_battery = 0.252/6; 
 num_bats = 3;
 m_p = m_board_bat + m_motor + num_bats*m_battery;      % [kg]
 switch num_bats
