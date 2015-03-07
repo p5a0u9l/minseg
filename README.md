@@ -30,6 +30,8 @@
 
 [State Feedback Control in Simulink](http://ctms.engin.umich.edu/CTMS/index.php?example=AircraftPitch&section=SimulinkModeling)
 
+[Digital State Space Controller Design](http://ctms.engin.umich.edu/CTMS/index.php?example=AircraftPitch&section=ControlDigital#2)
+
 ## Emails ##
 1. 
     From: Schulenberg, Christopher S 
