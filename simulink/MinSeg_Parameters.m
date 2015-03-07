@@ -118,7 +118,7 @@ Ki=1*[-r_w -r_w*0 1 1*0];
 
 % TS=.0024  % fastest pololu gyro
 
-TS=.03
+TS=.005;
 %TS=.0026; fastest with 8 bit serial with gyro
 %TS=.0025; fastest with no serial with gyro
 %TS=.0021; %fastest with 16 serial (no gyro)
