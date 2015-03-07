@@ -278,7 +278,7 @@ l = legend('$\hat{\alpha}$', '$\hat{\dot{\alpha}}$', '$\hat{x}$', '$\hat{\dot{x}
 set(l, 'interpreter', 'latex', 'location', 'northeast', 'FontSize', 15)
 xlabel('time [s]');     ylabel('$\mathbf{\hat{x}}$')
 
-e = xf - x_hatf;
+e = xf - xhatf;
 f = figure;
 f.Position(3) = 1.6*f.Position(3);
 plot(time, e)
@@ -291,4 +291,5 @@ xlabel('time [s]');     ylabel('$\mathbf{error}$')
 %% 
 % <html> <h3> Step 16 Demonstrate the MinSeg balancing.</h3> </html>
 %
-% close all
+sys_d = c2d(sys,0.005,'zoh');
+K = place(sys_d.a,sys_d.b,poles_fbkCtrl);

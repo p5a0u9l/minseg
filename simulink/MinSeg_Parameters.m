@@ -144,7 +144,7 @@ a_go = .006;  % alpha for initial gyro offset calibration (2 sec for ss)
 
 % Start time for balancing - Gyro calibartion time:
 tstart=2;
-
+K = KLQRC;
 
 %% MPU5060
 % TS=.005 % fastest with default mpu5060 library settings... and filter set to DLPF set to 4
