@@ -1,4 +1,4 @@
-function render_latex(str, fs, h)
+function fig = render_latex(str, fs, h)
 % offscreen figure
 fig = figure('Menubar','none', 'Color','white', ...
     'Units','inches', 'Position',[100 100 8 h]);
@@ -9,4 +9,3 @@ str = strrep(str, '\end{array}\right)', '\end{array}\right]');
 text(0.5, 0.5, ['$$' str '$$'], 'Interpreter','latex', 'FontSize',fs, ...
     'HorizontalAlignment','center', 'VerticalAlignment','middle')
 snapnow
-close(fig);
