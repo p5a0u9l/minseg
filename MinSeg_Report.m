@@ -11,7 +11,7 @@ format shortG
 numerical_precision = 1e-5;
 syms a x I_p m_p L r_w I_w m_w r_w
 syms s k_t R V k_b 
-set(0,'DefaultFigureVisible','off');  % all subsequent figures "off"
+% set(0,'DefaultFigureVisible','off');  % all subsequent figures "off"
 
 %% 4.1 Dynamical Model of the MinSeg Robot
 %%
@@ -36,7 +36,7 @@ h_p = 0.2;           % [m] - height of pendulum, from top of PCB to wheel axis, 
 %I_p = m_p * h_p^2 / 3; % [kg-m^2] - http://en.wikipedia.org/wiki/List_of_moments_of_inertia
 % assuming point mass
 I_p = m_p * L^2; % [kg-m^2] - http://en.wikipedia.org/wiki/Moment_of_inertia
-
+%%
 render_latex(['L = ' latex(vpa(L, 3)) ' [\textrm{m}]'], 12, 0.35)
 render_latex(['m_p = ' latex(vpa(m_p, 3)) ' [\textrm{kg}]'], 12, 0.35)
 render_latex(['I_p = ' latex(vpa(I_p, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
@@ -45,7 +45,7 @@ render_latex(['r_w = ' latex(vpa(r_w, 3)) ' [\textrm{m}]'], 12, 0.35)
 render_latex(['I_{cm,w} = ' latex(vpa(I_w, 3)) ' [\textrm{kg m}^2]'], 12, 0.35)
 %%
 % 
-% <<C:\Users\lq561d\Documents\MSEE\Courses\ee547\project\simulink\MinSegModel.png>>
+% <<simulink\MinSegModel.png>>
 % 
 
 %%

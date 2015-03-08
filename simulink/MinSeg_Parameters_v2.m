@@ -26,24 +26,29 @@ R2D=180/pi;
 D2R=1/R2D;
 
 %% MinSeg Parameters
-r_w = 0.016;    % [m] - 5/8", measured
-% r_w = 0.020;    % [m] - 5/8", measured
+% r_w = 0.016;    % [m] - 5/8", measured
+r_w = 0.021;    % [m] - 5/8", measured
 m_board_bat = 0.250; % measured in class
 m_board = 0.120;
 m_wheel = 0.017; % measured in class
 m_w = 0.017;
 m_motor = 0.084;
 m_battery = 0.252/6;
-num_bats = 6;
+num_bats = 3;
 m_p = m_board + m_motor + num_bats*m_battery;      % [kg]
+
+
 switch num_bats
     case 0
         L_com = 0.095;       % [m]   - demonstrated balance point with 6 AA batteries
         Vsupply = 5;
+        TS=.03;
     case 3
         L_com = 0.1;
         Vsupply = 5;
+        TS=.03;
     case 6
+        TS=.005; %fastest with 8 bit serial with gyro
         L_com = 0.11;       % [m]   - demonstrated balance point with 6 AA batteries
         Vsupply = 9;  % 9 volts
 end
@@ -89,10 +94,8 @@ KLQR= [10.0000   51.6376  -78.2912  -12.5550] % 43mm*** Q=100 - even slower/smoo
 %KLQR= [20.0000   62.3023 -122.6693  -23.4192] %Q=400
 
 %%
-TS=.0024;  % fastest pololu gyro
+% TS=.0024;  % fastest pololu gyro
 
-TS=.03;
-% TS=.0026; %fastest with 8 bit serial with gyro
 %TS=.0025; fastest with no serial with gyro
 %TS=.0021; %fastest with 16 serial (no gyro)
 %TS=.0011; %fastest with 8 bit serial (no gyro)
