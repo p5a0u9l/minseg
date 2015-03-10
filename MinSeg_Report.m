@@ -339,11 +339,20 @@ xlabel('time =[s]');    ylabel('$\mathbf{y}$')
 report.goto('wdGoToBookmark','ObserverSimulink');
 report.setParaProps('Alignment',1); %Centered
 report.addModel('step_11');
-report.addCaption('Figure','Open Loop MinSeg Model with Observer')
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
+report.addCaption('Figure','Open Loop MinSeg Model with Observer');
+report.setParaProps('Alignment',1); %Centered
+report.addPara
 report.setParaProps('Alignment',1); %Centered
 report.addFigure(fig);
-report.addCaption('Figure','Observer Tracking Performance')
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
+report.addCaption('Figure','Observer Tracking Performance');
 report.setParaProps('Alignment',1); %Centered
+report.addPara
 image = report.HdlWordDoc.InlineShapes.Item( ...
     report.HdlWordDoc.InlineShapes.Count);
 image.PictureFormat.CropBottom = crop(1,1);
@@ -362,6 +371,7 @@ K = place(A, B, poles_fbkCtrl);
 report.goto('wdGoToBookmark','FeedbackGain');
 fig = render_latex(['K = ' latex(vpa(sym(K), 2))], 12, 0.5);
 crop = [260 240];
+report.setParaProps('Alignment',1); %Centered
 report.addFigure(fig);
 image = report.HdlWordDoc.InlineShapes.Item( ...
     report.HdlWordDoc.InlineShapes.Count);
@@ -409,9 +419,14 @@ close all
 sys_cl = ss(Acl, B, C, D);
 pzmap(sys_cl);
 fig = gcf;
+report.setParaProps('Alignment',1); %Centered
 report.addFigure(fig);
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
 report.addCaption('Figure','Poles of Proportional Feedback Controller')
 report.setParaProps('Alignment',1); %Centered
+report.addPara
 clear fig*
 close all
 
@@ -465,11 +480,20 @@ xlabel('time [s]');     ylabel('$\mathbf{y}$')
 report.goto('wdGoToBookmark','FeedbackSimulink');
 report.setParaProps('Alignment',1); %Centered
 report.addModel('step_14');
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
 report.addCaption('Figure','Closed Loop MinSeg Model')
 report.setParaProps('Alignment',1); %Centered
+report.addPara
+report.setParaProps('Alignment',1); %Centered
 report.addFigure(fig);
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
 report.addCaption('Figure','Closed Loop Feedback Controller Performance')
 report.setParaProps('Alignment',1); %Centered
+report.addPara
 clear fig* crop image
 close all
 
@@ -519,13 +543,22 @@ xlabel('time [s]');     ylabel('$\mathbf{error}$')
 report.goto('wdGoToBookmark','FeedbackObserverSimulink');
 report.setParaProps('Alignment',1); %Centered
 report.addModel('step_15');
+img = report.HdlWordDoc.InlineShapes.Item( ...
+       report.HdlWordDoc.InlineShapes.Count);
+img.Height = 0.5 * img.Height;
 report.addCaption('Figure','Closed Loop MinSeg Model with Observer')
 report.setParaProps('Alignment',1); %Centered
-
+report.addPara
 for index = 1:length(figs)
+    report.setParaProps('Alignment',1); %Centered
     report.addFigure(figs(index));
+    img = report.HdlWordDoc.InlineShapes.Item( ...
+        report.HdlWordDoc.InlineShapes.Count);
+    img.Height = 0.5 * img.Height;
+    report.setParaProps('Alignment',1); %Centered
     report.addCaption('Figure',captions{index})
     report.setParaProps('Alignment',1); %Centered
+    report.addPara
 end
 clear fig* crop captions
 close all
@@ -537,4 +570,4 @@ close all
 sys_d = c2d(sys,0.005,'zoh');
 K = place(sys_d.a,sys_d.b,poles_fbkCtrl);
 
-report.HdlWordDoc.SaveAs('EE547_final.docx');
+report.HdlWordDoc.SaveAs([pwd '\EE547_final.docx']);
