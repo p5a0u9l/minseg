@@ -5,7 +5,7 @@
 
 %% Open report
 % file://///sw/data/matlab_eng_tools/GNC/deployment/GNC_MATLAB_vob/tools/toolbox_utils/tlbxUtils_docs/WordRpt_details.html
-addpath('\\sw\data\matlab_eng_tools\GNC\deployment\GNC_MATLAB_vob\tools\toolbox_utils');
+% addpath('\\sw\data\matlab_eng_tools\GNC\deployment\GNC_MATLAB_vob\tools\toolbox_utils');
 report = WordRpt([pwd '\EE547_shell.docx']);
 
 %% Initialization
@@ -82,7 +82,7 @@ report.goto('wdGoToBookmark','MinSegParamsTable');
 report.addTable(MinSegParamsTable);
 tableCount = report.HdlWordDoc.Tables.Count;
 table = report.HdlWordDoc.Tables.Item(tableCount);
-table.AllowPageBreaks = 0;
+% table.AllowPageBreaks = 0;
 table.AutoFormat;
 clear table tablecount MinSegParamsTable;
 
@@ -142,14 +142,11 @@ crop = [crop;[280 260]];
 %%
 % <html> <h3> Step 5 Check if the system is asymptotically stable. </h3> </html>
 if all(real(eigenvalues_ol) < 0)
-    eigText=['Because the eigenvalues are all negative and the system '...
-             'poles are in the open left hand plane of the pole-zero ' ...
-             'map, the unaugmented system is asymptotically stable.'];
+    eigText=['Because the real part of the eigenvalues are all negative '...
+             'the open-loop system is asymptotically stable.'];
 else
-    eigText=['Because not all eigenvalues are negative and the system '...
-             'poles are not all in the open left hand plane of the ' ...
-             'pole-zero map, the unaugmented system is not ' ...
-             'asymptotically stable.'];
+    eigText=['Because the real part of the eigenvalues are not all negative '...
+             'the open-loop system is not asymptotically stable.'];
 end
 
 %%
@@ -179,7 +176,7 @@ for index = 1:length(figs)
     image = report.HdlWordDoc.InlineShapes.Item( ...
         report.HdlWordDoc.InlineShapes.Count);
     image.PictureFormat.CropBottom = crop(index,1);
-    image.PictureFormat.CropTop    = crop(index,2);
+    image.PictureFormat.CropTop = crop(index,2);
 end
 clear fig* crop eigText
 close all
@@ -265,14 +262,14 @@ ocf = canon(sys, 'companion');
 
 %% Add Canonical Forms to report
 figs = ...
-    [render_latex(['A{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2); ...
-     render_latex(['C{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2); ...
-     render_latex(['A{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2); ...
-     render_latex(['C{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)];
+    [render_latex(['A_{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2); ...
+     render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2); ...
+     render_latex(['A_{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2); ...
+     render_latex(['C_{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)];
 crop = repmat([260 230],4,1);
 
 canonText = ['For computational efficiency and direct readability of ' ...
-             'certain system characteristics, the linearized MinSeg ' ...
+             'Transfer Function coefficients, the linearized MinSeg ' ...
              'state-space model was transformed to Controllable ' ...
              'and Observable Canonical Forms (CCF and OCF, ' ...
              'respectively.'];
@@ -537,4 +534,4 @@ close all
 sys_d = c2d(sys,0.005,'zoh');
 K = place(sys_d.a,sys_d.b,poles_fbkCtrl);
 
-report.HdlWordDoc.SaveAs('EE547_final.docx');
+report.HdlWordDoc.SaveAs2('EE547_final.docx');

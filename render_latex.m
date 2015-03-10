@@ -8,4 +8,4 @@ str = strrep(str, '\end{array}\right)', '\end{array}\right]');
 
 text(0.5, 0.5, ['$$' str '$$'], 'Interpreter','latex', 'FontSize',fs, ...
     'HorizontalAlignment','center', 'VerticalAlignment','middle')
-snapnow
+% snapnow
