@@ -184,21 +184,21 @@ close all
 %% 4.2 Controllability and Observability of the System
 % <html> <h3> Step 7 Check if the system is controllable by the rank of controllability matrix by MATLAB <i>rank</i> function.</h3> </html>
 Cm = ctrb(sys.a, sys.b);
-fig = render_latex(['ctrb = ' latex(vpa(Cm, 3))], 10, 1);
-crop = [260 240]; % Crop values are trial and error
+% fig = render_latex(['ctrb = ' latex(vpa(Cm, 3))], 10, 1);
+% crop = [260 240]; % Crop values are trial and error
 
 report.goto('wdGoToBookmark','ControllabilityObservability');
 rankText = sprintf(['The Controllability Matrix was determined to be ' ...
                     'of rank %i:'],rank(Cm));
 report.addText(rankText,[0,1]);
 clear rankText
-report.addFigure(fig);
-image = report.HdlWordDoc.InlineShapes.Item( ...
-        report.HdlWordDoc.InlineShapes.Count);
-image.PictureFormat.CropBottom = crop(1,1);
-image.PictureFormat.CropTop    = crop(1,2);
-clear fig image
-close all
+% report.addFigure(fig);
+% image = report.HdlWordDoc.InlineShapes.Item( ...
+%         report.HdlWordDoc.InlineShapes.Count);
+% image.PictureFormat.CropBottom = crop(1,1);
+% image.PictureFormat.CropTop    = crop(1,2);
+% clear fig image
+% close all
 
 if rank(Cm) >= N
     ctrbText = ['Because the rank of the controllability matrix is ' ...
@@ -217,20 +217,20 @@ clear ctrbText
 %%
 % <html> <h3> Step 8 Analyze the observability of the linearized system.</h3> </html>
 Om = obsv(sys.a, sys.c);
-fig = render_latex(['obsv = ' latex(vpa(Om, 3))], 10, 1);
-crop = [150 130]; % Crop values are trial and error
+% fig = render_latex(['obsv = ' latex(vpa(Om, 3))], 10, 1);
+% crop = [150 130]; % Crop values are trial and error
 
 rankText = sprintf(['The Observability Matrix was determined to be ' ...
                     'of rank %i:'],rank(Om));
 report.addText(rankText,[0,1]);
 clear rankText
-report.addFigure(fig);
-image = report.HdlWordDoc.InlineShapes.Item( ...
-        report.HdlWordDoc.InlineShapes.Count);
-image.PictureFormat.CropBottom = crop(1,1);
-image.PictureFormat.CropTop    = crop(1,2);
-clear fig
-close all
+% report.addFigure(fig);
+% image = report.HdlWordDoc.InlineShapes.Item( ...
+%         report.HdlWordDoc.InlineShapes.Count);
+% image.PictureFormat.CropBottom = crop(1,1);
+% image.PictureFormat.CropTop    = crop(1,2);
+% clear fig
+% close all
 
 if rank(Cm) >= N
     obsvText = ['Because the rank of the observability matrix is ' ...
@@ -261,18 +261,21 @@ ccf = ss(A_, B_, C_, D_);
 ocf = canon(sys, 'companion');
 
 %% Add Canonical Forms to report
+% figs = ...
+%     [render_latex(['A_{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2); ...
+%      render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2); ...
+%      render_latex(['A_{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2); ...
+%      render_latex(['C_{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)];
 figs = ...
     [render_latex(['A_{ccf} = ' latex(vpa(sym(ccf.a), 2))], 12, 1.2); ...
-     render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2); ...
-     render_latex(['A_{ocf} = ' latex(vpa(sym(ocf.a), 2))], 12, 1.2); ...
-     render_latex(['C_{ocf} = ' latex(vpa(sym(ocf.c), 2))], 12, 1.2)];
-crop = repmat([260 230],4,1);
+     render_latex(['C_{ccf} = ' latex(vpa(sym(ccf.c), 2))], 12, 1.2)]
+% crop = repmat([260 230],4,1);
+crop = repmat([260 230], 2, 1);
 
 canonText = ['For computational efficiency and direct readability of ' ...
              'Transfer Function coefficients, the linearized MinSeg ' ...
              'state-space model was transformed to Controllable ' ...
-             'and Observable Canonical Forms (CCF and OCF, ' ...
-             'respectively.'];
+             ' Canonical Form.'];
 report.addText(canonText,[0,1]);
 
 for index = 1:length(figs)
